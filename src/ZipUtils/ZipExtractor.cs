@@ -21,12 +21,12 @@ public static class ZipExtractor
     /// <param name="destinationFolderPath">Target folder path.</param>
     /// <param name="extractionOptions">Extraction options.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Map of archive file names to extracted file names.</returns>
+    /// <returns>Map of archive file names to extracted file info.</returns>
     /// <exception cref="InvalidOperationException" />
     /// <remarks>
     /// File names are forcibly hashed when they are too long.
     /// </remarks>
-    public static async Task<IReadOnlyDictionary<string, string>> ExtractArchiveFileToFolderAsync(
+    public static async Task<IReadOnlyDictionary<string, ExtractedFileInfo>> ExtractArchiveFileToFolderAsync(
         string sourceArchiveFilePath,
         string destinationFolderPath,
         ExtractionOptions? extractionOptions = null,
@@ -47,7 +47,7 @@ public static class ZipExtractor
             throw new InvalidOperationException($"Archive data is too big ({declaredSize} bytes)");
         }
 
-        var extractedFiles = new Dictionary<string, string>();
+        var extractedFiles = new Dictionary<string, ExtractedFileInfo>();
 
         foreach (var entry in archive.Entries)
         {
@@ -60,11 +60,11 @@ public static class ZipExtractor
 
             var namingMode = extractionOptions.FileNamingModeSelector(entry.FullName);
 
-            var targetFilePath = await ExtractEntryToFolderAsync(entry, destinationFolderPath, namingMode, cancellationToken);
+            var targetFileInfo = await ExtractEntryToFolderAsync(entry, destinationFolderPath, namingMode, cancellationToken);
 
-            if (targetFilePath != null)
+            if (targetFileInfo.HasValue)
             {
-                extractedFiles[entry.FullName] = targetFilePath;
+                extractedFiles[entry.FullName] = targetFileInfo.Value;
             }
         }
 
@@ -80,7 +80,7 @@ public static class ZipExtractor
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Extracted file relative path.</returns>
     /// <exception cref="InvalidOperationException">Target file name is too long.</exception>
-    private static async Task<string?> ExtractEntryToFolderAsync(
+    private static async Task<ExtractedFileInfo?> ExtractEntryToFolderAsync(
         ZipArchiveEntry entry,
         string destinationFolderPath,
         UnzipNamingMode fileNamingMode = UnzipNamingMode.KeepOriginal,
@@ -108,7 +108,7 @@ public static class ZipExtractor
         if (!entry.FullName.EndsWith(Path.AltDirectorySeparatorChar)) // Not a directory
         {
             await ZipFileExtensionsPatched.ExtractToFileAsync(entry, targetPath, true, cancellationToken);
-            return relativeTargetFileName;
+            return new ExtractedFileInfo(relativeTargetFileName, new FileInfo(targetPath).Length);
         }
 
         return null;

@@ -12,7 +12,10 @@ public sealed class ZipExtractorTests
             var extractedFiles = await ZipExtractor.ExtractArchiveFileToFolderAsync("test.zip", targetFolder);
 
             Assert.That(extractedFiles, Has.Count.EqualTo(8));
-            Assert.That(extractedFiles, Contains.Item(new KeyValuePair<string, string>("content.xml", "content.xml")));
+
+            Assert.That(extractedFiles, Contains.Item(new KeyValuePair<string, ExtractedFileInfo>(
+                "content.xml",
+                new ExtractedFileInfo("content.xml", 11584))));
         }
         finally
         {
@@ -56,8 +59,8 @@ public sealed class ZipExtractorTests
                 });
 
             Assert.That(extractedFiles, Has.Count.EqualTo(7));
-            Assert.That(extractedFiles.Values, Contains.Item("content.xml"));
-            Assert.That(extractedFiles.Values, Contains.Item(Path.Combine("Images", "549C3F433C5FBA8C.png")));
+            Assert.That(extractedFiles.Values, Contains.Item(new ExtractedFileInfo("content.xml", 11584)));
+            Assert.That(extractedFiles.Values, Contains.Item(new ExtractedFileInfo(Path.Combine("Images", "549C3F433C5FBA8C.png"), 31924)));
         }
         finally
         {
