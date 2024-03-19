@@ -67,4 +67,19 @@ public sealed class ZipExtractorTests
             Directory.Delete(targetFolder, true);
         }
     }
+
+    [Test]
+    public void ExtractArchiveFileToFolderAsync_BadPath_Fail()
+    {
+        var targetFolder = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+
+        try
+        {
+            Assert.ThrowsAsync<InvalidOperationException>(() => ZipExtractor.ExtractArchiveFileToFolderAsync("badFolder.zip", targetFolder));
+        }
+        finally
+        {
+            Directory.Delete(targetFolder, true);
+        }
+    }
 }

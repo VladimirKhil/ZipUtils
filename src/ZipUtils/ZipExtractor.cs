@@ -122,6 +122,7 @@ public static class ZipExtractor
     /// <returns>Target subfolder path.</returns>
     private static string PrepareFolderForExtraction(ZipArchiveEntry entry, string destinationFolderPath)
     {
+        // TODO: support nested folders
         var directorySeparatorIndex = entry.FullName.IndexOf(Path.AltDirectorySeparatorChar);
 
         if (directorySeparatorIndex == -1)
@@ -134,8 +135,21 @@ public static class ZipExtractor
         // TODO: support safe renaming for folder names
 
         var targetDir = Path.Combine(destinationFolderPath, subFolderPath);
+        ValidateEntryFullPath(entry.FullName, destinationFolderPath, targetDir);
+
         Directory.CreateDirectory(targetDir);
 
         return subFolderPath;
+    }
+
+    private static void ValidateEntryFullPath(string entryFullPath, string destinationFolderPath, string targetDir)
+    {
+        var targetDirFullPath = Path.GetFullPath(targetDir);
+        var descinationFolderFullPath = Path.GetFullPath(destinationFolderPath + Path.DirectorySeparatorChar);
+
+        if (!targetDirFullPath.StartsWith(descinationFolderFullPath))
+        {
+            throw new InvalidOperationException($"Entry {entryFullPath} is outside target directory");
+        }
     }
 }
