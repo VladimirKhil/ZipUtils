@@ -135,21 +135,16 @@ public static class ZipExtractor
         // TODO: support safe renaming for folder names
 
         var targetDir = Path.Combine(destinationFolderPath, subFolderPath);
-        ValidateEntryFullPath(entry.FullName, destinationFolderPath, targetDir);
+        var targetDirFullPath = Path.GetFullPath(targetDir);
+        var destinationFolderFullPath = Path.GetFullPath(destinationFolderPath + Path.DirectorySeparatorChar);
+
+        if (!targetDirFullPath.StartsWith(destinationFolderFullPath))
+        {
+            throw new InvalidOperationException($"Entry {entry.FullName} is outside target directory");
+        }
 
         Directory.CreateDirectory(targetDir);
 
         return subFolderPath;
-    }
-
-    private static void ValidateEntryFullPath(string entryFullPath, string destinationFolderPath, string targetDir)
-    {
-        var targetDirFullPath = Path.GetFullPath(targetDir);
-        var descinationFolderFullPath = Path.GetFullPath(destinationFolderPath + Path.DirectorySeparatorChar);
-
-        if (!targetDirFullPath.StartsWith(descinationFolderFullPath))
-        {
-            throw new InvalidOperationException($"Entry {entryFullPath} is outside target directory");
-        }
     }
 }
