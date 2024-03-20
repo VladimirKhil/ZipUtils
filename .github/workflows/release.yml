@@ -25,7 +25,7 @@ jobs:
         VERSION=${{ github.event.release.tag_name || github.event.inputs.version }}
         echo "PACKAGE_VERSION=${VERSION#v}" >> $GITHUB_ENV
         
-    - name: P
+    - name: Package
       run: |
-        dotnet pack src\ZipUtils\ZipUtils.csproj -c Release /property:Version=$PACKAGE_VERSION
-        dotnet nuget push bin\.Release\ZipUtils\VKhil.ZipUtils.$PACKAGE_VERSION.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        dotnet pack src/ZipUtils/ZipUtils.csproj -c Release /property:Version=$PACKAGE_VERSION
+        dotnet nuget push bin/.Release/ZipUtils/VKhil.ZipUtils.$PACKAGE_VERSION.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
