@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  release:
+    types:
+      - created
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version'
+        required: true
+        default: '1.0.0'
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      
+    - name: Set version
+      run: |
+        VERSION=${{ github.event.release.tag_name || github.event.inputs.version }}
+        echo "PACKAGE_VERSION=${VERSION#v}" >> $GITHUB_ENV
+        
+    - name: P
+      run: |
+        dotnet pack src\ZipUtils\ZipUtils.csproj -c Release /property:Version=$PACKAGE_VERSION
+        dotnet nuget push bin\.Release\ZipUtils\VKhil.ZipUtils.$PACKAGE_VERSION.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
